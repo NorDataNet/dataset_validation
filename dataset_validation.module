@@ -73,7 +73,7 @@ require_login(drupal_get_destination());
      'file_validate_extensions' => array('nc'),
 // IMPORTANT for allowing file upload: 
 // this works only when changing the /etc/php5/apache2/php.ini post_max_size and filesize in apache to 200M
-     'file_validate_size' => array(200 * 1024 * 1024),
+     'file_validate_size' => array(1500 * 1024 * 1024),
    ),
   '#upload_location' => 'public://dataset_validation_folder/',
 );
@@ -109,16 +109,16 @@ function dataset_validation_submit($form, &$form_state){
 
    if($test1 =='cf:1.6' AND $test2 =='0'){
       drupal_set_message(t("You are testing you dataset \"".$fname["#file"]->filename."\" against CF-1.6 convention"), 'status info');
-      exec('compliance-checker -v  --format=html --output='.$ex_out_cf.' --test='.$test1.' '.$fdir.'/'.$path, $out, $status);
+      exec('compliance-checker -v -c lenient --format=html --output='.$ex_out_cf.' --test='.$test1.' '.$fdir.'/'.$path, $out, $status);
       $message = file_get_contents($ex_out_cf);
    }elseif($test1 =='0' AND $test2 =='acdd'){
       drupal_set_message(t("You are testing you dataset \"".$fname["#file"]->filename."\" against ACDD convention"), 'status info');
-      exec('compliance-checker -v --format=html --output='.$ex_out_acdd.' --test='.$test2.' '.$fdir.'/'.$path, $out, $status);
+      exec('compliance-checker -v -c lenient --format=html --output='.$ex_out_acdd.' --test='.$test2.' '.$fdir.'/'.$path, $out, $status);
       $message = file_get_contents($ex_out_acdd);
    }elseif($test1 =='cf:1.6' AND $test2 =='acdd'){
       drupal_set_message(t("You are testing you dataset \"".$fname["#file"]->filename."\" against CF-1.6 and ACDD convention"), 'status info');
-      exec('compliance-checker -v --format=html --output='.$ex_out_cf.' --test='.$test1.' '.$fdir.'/'.$path, $out, $status1);
-      exec('compliance-checker -v --format=html --output='.$ex_out_acdd.' --test='.$test2.' '.$fdir.'/'.$path, $out, $status2);
+      exec('compliance-checker -v -c lenient --format=html --output='.$ex_out_cf.' --test='.$test1.' '.$fdir.'/'.$path, $out, $status1);
+      exec('compliance-checker -v -c lenient --format=html --output='.$ex_out_acdd.' --test='.$test2.' '.$fdir.'/'.$path, $out, $status2);
       $status = $status1 + $status2;
       //put together the html outputs
       $message = file_get_contents($ex_out_cf).file_get_contents($ex_out_acdd);
