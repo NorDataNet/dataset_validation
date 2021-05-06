@@ -1,151 +1,20 @@
 <?php
 
-function dataset_validation_menu() {
- $items = array();
+use Drupal\Core\Routing\RouteMatchInterface;
+/**
+ * Implements hook_help().
+ */
+function dataset_validation_help($route_name, RouteMatchInterface $route_match)
+{
+    switch ($route_name) {
+    // Main module help for the metsis_search module.
+    /** TODO: Read help from module's README.md */
+    case 'help.page.dataset_validation':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Dataset validation') . '</p>';
+      return $output;
 
- $items['dataset_validation/form'] = array(
-  //'title' => 'Dataset Validation Submission', // Title of our page
-  'page callback' => 'drupal_get_form',
-  'page arguments' => array('dataset_validation_form'), // function that will returns the results to our page
-  'access callback' => TRUE,
-  'access arguments' => array('access content'), // permission to access this page
-  'type' => MENU_CALLBACK, // type of menu item
- );
- $items['dataset_validation/form/outcome'] = array(
-  //'title' => 'Dataset Validation Submission Results', // Title of our page
-  'page callback' => 'print_message',
-  'access callback' => TRUE,
-  'access arguments' => array('access content'), // permission to access this page
- );
-
- return $items;
-}
-
-function dataset_validation_init(){
-   $mpath = drupal_get_path('module', 'dataset_validation');
-   $current_theme = variable_get('theme_default', 'none');
-   if ($current_theme == 'corporateclean'){
-      drupal_add_css($mpath . '/css/dataset_validation_style_cc.css');
-   }elseif ($current_theme == 'business'){
-      drupal_add_css($mpath . '/css/dataset_validation_style_bs.css');
-   }else{
-      drupal_add_css($mpath . '/css/dataset_validation_style.css');
-   }
-}
-
-
-function require_login($calling_uri) {
-  global $user; 
-  if (!($user->uid)) {
-    $dest = drupal_get_destination();
-    drupal_set_message(t('You need to login or register to validate your dataset'), 'error');
-    drupal_goto('user/login', array('query' => $calling_uri));
+    default:
   }
-}
-
-function dataset_validation_form() {
-
-require_login(drupal_get_destination()); 
-
- $form['creation'] = array(
-  '#type' => 'fieldset',
-  '#description' => t('Webform for validation of netCDF files based on the <a href=https://github.com/ioos/compliance-checker>IOOS compliance checker </a> '), // Description of our page
-  '#collapsible' => TRUE,
-  '#collapsed' => FALSE,
-);
- $form['creation']['test'] = array(
-  '#type' => 'checkboxes',
-  '#title' => t('Select the test you want to run'),
-    "#options" => array(
-      "cf:1.6" => t("CF-1.6"),
-      "acdd" => t("ACDD"),
-    ),
-  '#attributes' => array('checked' => 'unchecked'),
-  '#required' => TRUE,
-);
-
- $form['creation']['file'] = array(
-  '#type' => 'managed_file',
-  '#title' => t('Upload Your File'),
-  '#description' => t('You can only upload a single netCDF file with ".nc" extension, with a maximum size of 1500M. You need to upload a bigger file, take contact with the website support directly.'),
-  '#required' => TRUE,
-  '#upload_validators' => array(
-     'file_validate_extensions' => array('nc'),
-// IMPORTANT for allowing file upload: 
-// this works only when changing the /etc/php5/apache2/php.ini post_max_size and filesize in apache to 200M
-     'file_validate_size' => array(1500 * 1024 * 1024),
-   ),
-  '#upload_location' => 'public://dataset_validation_folder/',
-);
-
- $form['submit'] = array(
-  '#type' => 'submit',
-  '#value' => t('Submit'),
-//  '#attributes' => array('onclick' => 'this.form.target="_blank";return true;'),
- );
-
- $form['#submit'][] = 'dataset_validation_submit';
- return $form;
-}
-
-
-// should be adding a new page with submission results from compliance-checker
-function dataset_validation_submit($form, &$form_state){
-   $ftest = $form['creation']['test'];
-   $test1 = $ftest['cf:1.6']["#value"];
-   $test2 = $ftest['acdd']["#value"];
-   $fname = $form['creation']['file'];
-   $uri = $fname["#file"]->uri;
-   $path = explode("://", $uri)[1]; 
-   //create output files for the checker
-   $name = explode(".nc", $fname["#file"]->filename)[0];
-   $name_out_cf = $name.'_cf.html';
-   $name_out_acdd = $name.'_acdd.html';
-
-   $fdir = drupal_realpath('public://');
-
-   $ex_out_cf = $fdir.'/dataset_validation_folder/'.$name_out_cf;
-   $ex_out_acdd = $fdir.'/dataset_validation_folder/'.$name_out_acdd;
-
-   if($test1 =='cf:1.6' AND $test2 =='0'){
-      drupal_set_message(t("You are testing you dataset \"".$fname["#file"]->filename."\" against CF-1.6 convention"), 'status info');
-      exec('compliance-checker -v -c lenient --format=html --output='.$ex_out_cf.' --test='.$test1.' '.$fdir.'/'.$path, $out, $status);
-      $message = file_get_contents($ex_out_cf);
-   }elseif($test1 =='0' AND $test2 =='acdd'){
-      drupal_set_message(t("You are testing you dataset \"".$fname["#file"]->filename."\" against ACDD convention"), 'status info');
-      exec('compliance-checker -v -c lenient --format=html --output='.$ex_out_acdd.' --test='.$test2.' '.$fdir.'/'.$path, $out, $status);
-      $message = file_get_contents($ex_out_acdd);
-   }elseif($test1 =='cf:1.6' AND $test2 =='acdd'){
-      drupal_set_message(t("You are testing you dataset \"".$fname["#file"]->filename."\" against CF-1.6 and ACDD convention"), 'status info');
-      exec('compliance-checker -v -c lenient --format=html --output='.$ex_out_cf.' --test='.$test1.' '.$fdir.'/'.$path, $out, $status1);
-      exec('compliance-checker -v -c lenient --format=html --output='.$ex_out_acdd.' --test='.$test2.' '.$fdir.'/'.$path, $out, $status2);
-      $status = $status1 + $status2;
-      //put together the html outputs
-      $message = file_get_contents($ex_out_cf).file_get_contents($ex_out_acdd);
-      //exec('compliance-checker -v --test='.$test1.' --test='.$test2.' '.$fdir.'/'.$path, $out, $status3);
-   }
-   //print the output of the compliance checker as taken from the html output. 
-   if($status !==0){
-      drupal_set_message(t("Your dataset is not compliant with the required test(s)."), 'error');
-      drupal_set_message($message, 'warning no-w-background');
-   }else{
-      drupal_set_message(t("Congratulations! Your dataset is compliant with the required test."), 'status');
-      drupal_set_message($message, 'status no-s-background');
-   }
-   //Remove submission file and DB entry. 
-   $fid = $fname["#file"]->fid;
-   $file_notsaved = file_load($fid);
-   file_delete($file_notsaved);
-   //Remove html files
-   if(file_exists($ex_out_cf)){
-      file_unmanaged_delete($ex_out_cf);
-   }
-   if(file_exists($ex_out_acdd)){
-      file_unmanaged_delete($ex_out_acdd);
-   }
-     $form_state['redirect'] = 'dataset_validation/form/outcome';
-}
-
-function print_message() {
-   return array();
 }

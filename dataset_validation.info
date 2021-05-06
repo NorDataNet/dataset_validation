@@ -1,3 +1,0 @@
-name = DataSet Validation
-description = "Custom webform for validation of netcdf files based on the compliance checker https://github.com/ioos/compliance-checker"
-core = 7.x

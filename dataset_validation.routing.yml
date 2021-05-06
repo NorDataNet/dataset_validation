@@ -1,0 +1,15 @@
+dataset_validation.form:
+  path: '/dataset_validation/form'
+  defaults:
+    _form: '\Drupal\dataset_validation\Form\DatasetValidationForm'
+    _title: 'Dataset validation form'
+  requirements:
+    _permission: 'validate dataset'
+
+dataset_validation.outcome:
+  path: '/dataset_validation/form/outcome'
+  defaults:
+    _controller: '\Drupal\dataset_validation\Controller\DatasetValidationController::outcome'
+    _title: 'Dataset validation outcome'
+  requirements:
+    _permission: 'validate dataset'

@@ -1,0 +1,6 @@
+dataset_validation.form:
+  title: 'Dataset validation'
+  description: 'Tool for dataset validation'
+  route_name: dataset_validation.form
+  menu_name: main
+  weight: 999
