@@ -1,13 +1,13 @@
 # dataset_validation
 
 ## dataset validation form
-Provides a form for uploading single netCDF file or archive ofNetCDF files.
+Provides a form for uploading single netCDF file, or an archive of NetCDF file(s).
 Perform the IOOS Compliance checker on the netCDF files using the dataset_validation.compliance_checker service
 
 
 ## dataset_validation.compliance_checker service
 Provides a contianer service for checking compliance of netCDF files using IOOS Compliance checker, given filename, and test(s).
-
+Defined by the CompianceChekcerInterface.
 
 
 ## Known problems:
