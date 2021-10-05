@@ -1,4 +1,5 @@
 # dataset_validation
+NOTE: You need to download and install the IOOS Compliance checker at https://github.com/ioos/compliance-checker/ and make sure the compliance-checker executable are availavble in the PATH.
 
 ## dataset validation form
 Provides a form for uploading single netCDF file, or an archive of NetCDF file(s).
