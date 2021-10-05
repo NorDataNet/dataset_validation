@@ -1,0 +1,11 @@
+services:
+  # Client factory service.
+  dataset_validation.compliance_checker_factory:
+    class: \Drupal\dataset_validation\Service\ComplianceCheckerFactory
+    arguments:
+      - '@config.factory'
+
+  # Create a service from another Service Factory.
+  dataset_validation.compliance_checker:
+    class: \Drupal\dataset_validation\Service\ComplianceChecker
+    factory: ['@dataset_validation.compliance_checker_factory', 'create']
