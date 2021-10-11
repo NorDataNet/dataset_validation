@@ -93,7 +93,7 @@ class DatasetValidationForm extends FormBase {
     $extensions = $this->archiverManager->getExtensions();
 
     //Disable caching for this form
-    $form_state->disableCache();
+    //$form_state->disableCache();
 
     //Always empty form when rebuild.
     $form = array();
@@ -105,10 +105,10 @@ class DatasetValidationForm extends FormBase {
 
       //Check if we have another preset upload location
       if($form_state->has('upload_location'))  {
-        $upload_location = $form_state->get('upload_location') . $form_state->get('session_id');
+        $upload_location = $form_state->get('upload_location') . md5($form_state->get('session_id'));
       }
       else {
-      $upload_location = 'public://dataset_validation_folder/'.$form_state->get('session_id');
+      $upload_location = 'public://dataset_validation_folder/'. md5($form_state->get('session_id'));
     }
       $form_state->set('upload_location', $upload_location);
 
@@ -169,7 +169,7 @@ class DatasetValidationForm extends FormBase {
   '#ajax' => [
     'callback' => '::validateCallback',
     'wrapper' =>'message-wrapper',
-    'disable-refocus' => true,
+    //'disable-refocus' => true,
     ],
 ];
 
@@ -231,25 +231,35 @@ class DatasetValidationForm extends FormBase {
      $file_id = $values['file'][0];
      $form_state->set('fid', $file_id);
      $file = File::load($file_id);
+     $file->setPermanent();
+     $file->save();
      $uri = $file->getFileUri();
      $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager')->getViaUri($uri);
      $file_path = $stream_wrapper_manager->realpath();
      $filename = $file->getFilename();
+     $form_state->set('filename', $filename);
      $mime_type = $file->getMimeType();
-     //dpm($mime_type);
+    // dpm($mime_type);
      $tests = null;
-     $tests = $values['test'];
 
+     if($form_state->has('tests')) {
+       $tests = $form_state->get('tests');
+     }
+     else {
+       $tests = $values['test'];
+     }
      $options = array();
      $options['filepath'] = \Drupal::service('file_system')->realpath($uri); //Absolute system filepath
-
+     //dpm($options);
      //process single netCDF file
      if ($mime_type === 'application/x-netcdf') {
+       //dpm('processing single: ' . $mime_type);
        self::processSingle($form, $form_state, $tests, $file_path, $filename, $file);
 
      }
      //Process archive of netCDF files
      else {
+       //dpm('processing archived files: '. $mime_type);
        self::processArchive($form, $form_state, $tests, $file_path, $filename, $file, $options);
      }
 
@@ -279,7 +289,7 @@ class DatasetValidationForm extends FormBase {
         if($tests !== null) {
         foreach($tests as $key => $value) {
            if($value !== 0) {
-             //dpm("doing test: " . $key);
+             dpm("doing test: " . $key);
           $status = $this->complianceChecker->checkCompliance($file_path, $filename, $key);
           $message[] = $this->complianceChecker->getComplianceMessage();
 
@@ -299,7 +309,7 @@ class DatasetValidationForm extends FormBase {
           $filesystem->deleteRecursive($form_state->get('upload_location'));
         }
         //$form_state->cleanValues();
-
+        $form_state->set('file_path', $file_path);
         $form_state->setRebuild();
 
       }
@@ -310,13 +320,14 @@ class DatasetValidationForm extends FormBase {
 
       private function processArchive(array &$form, FormStateInterface $form_state, $tests, $file_path, $filename, $file, $options) {
         $message = [];
+        $archived_files = [];
         //Add special message when processing files in archive
 
 
 
         //Get the archiver instance for the given file
         $archiver = $this->archiverManager->getInstance($options);
-        //dpm($archiver);
+        dpm($archiver);
         if($archiver == null  ) {
           $archive_message = [
           '#type' => 'markup',
@@ -327,7 +338,7 @@ class DatasetValidationForm extends FormBase {
         ];
 
           //$form_state->setRebuild();
-          $archived_files = [];
+
           //return;
       }
       else {
@@ -343,14 +354,14 @@ class DatasetValidationForm extends FormBase {
         $form_state->set('archived_files', $archived_files);
 
         //Extract the files
-        $archiver->extract($form_state->get('upload_location'));
+        $archiver->extract(\Drupal::service('file_system')->realpath($form_state->get('upload_location')));
 
       }
         $message[] = $archive_message;
 
 
 
-
+        //dpm($archived_files);
 
         //Loop over tests and check the compliance.
         $int_status = 0;
@@ -358,6 +369,7 @@ class DatasetValidationForm extends FormBase {
         foreach($archived_files as $f) {
           $uri = $form_state->get('upload_location') .'/' .$f;
           $filepath = \Drupal::service('file_system')->realpath($uri);
+          //dpm($filepath);
         if($tests !== null) {
           foreach($tests as $key => $value) {
              if($value !== 0) {
