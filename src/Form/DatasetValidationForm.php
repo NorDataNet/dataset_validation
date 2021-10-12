@@ -289,7 +289,7 @@ class DatasetValidationForm extends FormBase {
         if($tests !== null) {
         foreach($tests as $key => $value) {
            if($value !== 0) {
-             dpm("doing test: " . $key);
+             //dpm("doing test: " . $key);
           $status = $this->complianceChecker->checkCompliance($file_path, $filename, $key);
           $message[] = $this->complianceChecker->getComplianceMessage();
 
@@ -327,7 +327,7 @@ class DatasetValidationForm extends FormBase {
 
         //Get the archiver instance for the given file
         $archiver = $this->archiverManager->getInstance($options);
-        dpm($archiver);
+        //dpm($archiver);
         if($archiver == null  ) {
           $archive_message = [
           '#type' => 'markup',
