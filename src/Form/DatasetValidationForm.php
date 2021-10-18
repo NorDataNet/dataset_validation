@@ -179,7 +179,7 @@ class DatasetValidationForm extends FormBase {
 //  ];
  //$form['message']['result'] = [];
 
-
+  $form['#attached']['library'][] = 'dataset_validation/style';
   //$form['#submit'][] = 'dataset_validation_submit';
   return $form;
   }
@@ -334,7 +334,7 @@ class DatasetValidationForm extends FormBase {
           '#prefix' => '<div class="w3-panel w3-leftbar w3-border-red w3-pale-red w3-container w3-padding-16">',
           '#suffix' => '</div>',
           '#markup' => "<span><em><strong>Errror: </strong> Could not process archive <strong>{$filename}</strong></em></span>",
-          '#allowed_tags' => ['div', 'table', 'tr', 'td', 'style','strong', 'script', 'img', 'a', 'span', 'h3', 'h4', 'h5', 'br', 'span'],
+          '#allowed_tags' => ['div', 'table', 'tr', 'td', 'style','strong', 'img', 'a', 'span', 'h3', 'h4', 'h5', 'br', 'span'],
         ];
 
           //$form_state->setRebuild();
@@ -347,7 +347,7 @@ class DatasetValidationForm extends FormBase {
         '#prefix' => '<div class="w3-panel w3-leftbar w3-container w3-padding-16">',
         '#suffix' => '</div>',
         '#markup' => "<span><em>Showing validation result(s) for dataset(s) in archvie <strong>{$filename}</strong></em></span>",
-        '#allowed_tags' => ['div', 'table', 'tr', 'td', 'style','strong', 'script', 'img', 'a', 'span', 'h3', 'h4', 'h5', 'br', 'span'],
+        '#allowed_tags' => ['div', 'table', 'tr', 'td', 'style','strong', 'img', 'a', 'span', 'h3', 'h4', 'h5', 'br', 'span'],
       ];
         $archived_files = $archiver->listContents();
         //Get list of files in archive

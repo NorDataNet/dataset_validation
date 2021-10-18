@@ -18,3 +18,7 @@
 div.messages.status a, div.messages.error a, div.messages.warning a {
     color: black !important;
 }
+
+div.page-header {
+  display: none;
+}
