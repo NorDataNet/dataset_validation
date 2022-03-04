@@ -25,11 +25,11 @@ use Drupal\Core\Archiver\ArchiverInterface;
  */
 class DatasetValidationForm extends FormBase
 {
-  /**
-  * The archiver plugin manager service.
-  *
-  * @var \Drupal\Core\Archiver\ArchiverManager
-  */
+    /**
+    * The archiver plugin manager service.
+    *
+    * @var \Drupal\Core\Archiver\ArchiverManager
+    */
     protected $archiverManager;
     /**
       * ComplianceChecker.
@@ -107,8 +107,8 @@ class DatasetValidationForm extends FormBase
             $form_state->set('session_id', $session->getId());
 
             //Check if we have another preset upload location
-            if ($form_state->has('upload_location')) {
-                $upload_location = $form_state->get('upload_location') . md5($form_state->get('session_id'));
+            if ($form_state->has('upload_basepath')) {
+                $upload_location = $form_state->get('upload_basepath') . md5($form_state->get('session_id'));
             } else {
                 $upload_location = 'public://dataset_validation_folder/'. md5($form_state->get('session_id'));
             }
@@ -236,6 +236,7 @@ class DatasetValidationForm extends FormBase
         $file = File::load($file_id);
         $file->setTemporary();
         $file->save();
+        $form_state->set('upload_fid', $file->id());
         $uri = $file->getFileUri();
         $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager')->getViaUri($uri);
         $file_path = $stream_wrapper_manager->realpath();
