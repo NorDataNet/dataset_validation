@@ -350,12 +350,16 @@ class DatasetValidationForm extends FormBase
       ];
             $archived_files = $archiver->listContents();
             \Drupal::logger('dataset_validation_archiver')->debug('<pre><code>' . print_r($archived_files, true) . '</code></pre>');
-
             //Get list of files in archive
             $form_state->set('archived_files', $archived_files);
 
             //Extract the files
             $archiver->extract(\Drupal::service('file_system')->realpath($form_state->get('upload_location')));
+
+            //Add aggregation flag if more than one file in archive.
+            if (count($archived_files) > 1) {
+                $form_state->set('aggregate', true);
+            }
         }
         $message[] = $archive_message;
 
