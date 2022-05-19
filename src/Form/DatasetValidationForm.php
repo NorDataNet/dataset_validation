@@ -124,6 +124,7 @@ class DatasetValidationForm extends FormBase
     '#suffix' => '</div>',
   ];
         $form['container']['message'] = [];
+        $form['container']['validation_message'] = [];
 
         $form['container']['creation'] = [
    '#type' => 'fieldset',
