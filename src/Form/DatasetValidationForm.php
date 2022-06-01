@@ -367,28 +367,38 @@ class DatasetValidationForm extends FormBase
 
 
         //dpm($archived_files);
-
+        $agg_files = [];
         //Loop over tests and check the compliance.
         $int_status = 0;
 
         foreach ($archived_files as $f) {
             $uri = $form_state->get('upload_location') .'/' .$f;
             $filepath = \Drupal::service('file_system')->realpath($uri);
-            //dpm($filepath);
-            if ($tests !== null) {
-                foreach ($tests as $key => $value) {
-                    if ($value !== 0) {
-                        //dpm("doing test: " . $key);
-                        $status = $this->complianceChecker->checkCompliance($filepath, $f, $key);
-                        $message[] = $this->complianceChecker->getComplianceMessage();
+            $path_info = pathinfo($filepath);
+            $ext = $path_info['extension'];
+            if (!is_null($ext)) {
+                \Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
 
-                        if (!$status) {
-                            $int_status++;
+
+
+                if ($tests !== null && ($ext === 'nc')) {
+                    \Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
+                    $agg_files[] = $filepath;
+                    foreach ($tests as $key => $value) {
+                        if ($value !== 0) {
+                            //dpm("doing test: " . $key);
+                            $status = $this->complianceChecker->checkCompliance($filepath, $f, $key);
+                            $message[] = $this->complianceChecker->getComplianceMessage();
+
+                            if (!$status) {
+                                $int_status++;
+                            }
                         }
                     }
                 }
             }
         }
+        $form_state->set('agg_files', $agg_files);
         $form_state->set('int_status', $int_status);
         $form_state->set('validation_message', $message);
 
