@@ -350,7 +350,7 @@ class DatasetValidationForm extends FormBase
         '#allowed_tags' => ['div', 'table', 'tr', 'td', 'style','strong', 'img', 'a', 'span', 'h3', 'h4', 'h5', 'br', 'span'],
       ];
             $archived_files = $archiver->listContents();
-            \Drupal::logger('dataset_validation_archiver')->debug('<pre><code>' . print_r($archived_files, true) . '</code></pre>');
+            //\Drupal::logger('dataset_validation_archiver')->debug('<pre><code>' . print_r($archived_files, true) . '</code></pre>');
             //Get list of files in archive
             $form_state->set('archived_files', $archived_files);
 
@@ -377,12 +377,12 @@ class DatasetValidationForm extends FormBase
             $path_info = pathinfo($filepath);
             $ext = $path_info['extension'];
             if (!is_null($ext)) {
-                \Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
+                //\Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
 
 
 
                 if ($tests !== null && ($ext === 'nc')) {
-                    \Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
+                    //\Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
                     $agg_files[] = $filepath;
                     foreach ($tests as $key => $value) {
                         if ($value !== 0) {
