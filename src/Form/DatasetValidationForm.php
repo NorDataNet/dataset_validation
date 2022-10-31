@@ -90,9 +90,9 @@ class DatasetValidationForm extends FormBase
      */
     public function buildForm(array $form, FormStateInterface $form_state)
     {
-
-
-    //Get supported extensions from ArchiverManager.
+        //$form = array();
+        //dpm($form_state);
+        //Get supported extensions from ArchiverManager.
         $extensions = $this->archiverManager->getExtensions();
 
         //Disable caching for this form
@@ -136,13 +136,37 @@ class DatasetValidationForm extends FormBase
      '#type' => 'checkboxes',
    '#title' => $this->t('Select the test you want to run'),
      "#options" => [
-       "cf:1.6" => "CF-1.6",
+       "cf" => "CF",
        "acdd" => "ACDD",
      ],
-     //'#default_value' => $form_state->getValue('test'),
-   '#attributes' => ['checked' => 'unchecked'],
+     '#default_value' => ['cf', 'acdd'],
+  // '#attributes' => ['checked' => 'unchecked'],
    '#required' => true,
+   /*'#states' => [
+    'invisible' => [
+       ':input[name="cf"]' => [ 'checked' => 'cf'],
+     ],
+   ],*/
  ];
+
+        $form['container']['creation']['cfversion'] = [
+    '#title' => $this->t('Select the CF convesion version'),
+    '#type' => 'radios',
+    //'#required' => true,
+    '#options' => ['cf:1.6' => $this->t('CF-1.6'),
+                        'cf:1.7' => $this->t('CF-1.7'),
+                        'cf:1.8' => $this->t('CF-1.8'),
+                  ],
+    '#default_value' => 'cf:1.6',
+  '#states' => [
+   'invisible' => [
+      ':input[name="test[cf]"]' => [ 'checked' => false],
+    ],
+    'required' => [
+       ':input[name="test[cf]"]' => [ 'checked' => true],
+     ],
+  ],
+    ];
 
         $form['container']['creation']['file'] = [
    '#type' => 'managed_file',
@@ -183,6 +207,12 @@ class DatasetValidationForm extends FormBase
 
         $form['#attached']['library'][] = 'dataset_validation/style';
         //$form['#submit'][] = 'dataset_validation_submit';
+
+        if ($form_state->getValue('reset-upload-field')) {
+            $form['container']['creation']['file']['#file'] = false;
+            $form['container']['creation']['file']['filename'] = [];
+            $form['container']['creation']['file']['#value']['fid'] = 0;
+        }
         return $form;
     }
 
@@ -204,9 +234,9 @@ class DatasetValidationForm extends FormBase
     {
         $message = $form_state->get('validation_message');
         //dpm($message);
-        $form['container']['creation']['file']['#file'] = false;
-        $form['container']['creation']['file']['filename'] = [];
-        $form['container']['creation']['file']['#value']['fid'] = 0;
+        /*  $form['container']['creation']['file']['#file'] = false;
+          $form['container']['creation']['file']['filename'] = [];
+          $form['container']['creation']['file']['#value']['fid'] = 0; */
         //$form['message']['result'] = [];
         $form['container']['message'] = $message;
         return $form;
@@ -230,7 +260,7 @@ class DatasetValidationForm extends FormBase
     {
         //Get the form values
         $values = $form_state->getValues();
-
+        //dpm($values);
         //Get file id of uploaded file and then get the real os filepath
         $file_id = $values['file'][0];
         $form_state->set('fid', $file_id);
@@ -248,10 +278,25 @@ class DatasetValidationForm extends FormBase
         $tests = null;
 
         if ($form_state->has('tests')) {
+            //dpm("getting tests form form state");
             $tests = $form_state->get('tests');
+        //dpm($tests);
         } else {
             $tests = $values['test'];
+            if ($tests['cf'] !== 0) {
+                if ($form_state->has('cfversion')) {
+                    $tests['cf'] = $form_state->get('cfversion');
+                } else {
+                    $tests['cf'] = $values['cfversion'];
+                }
+            }
         }
+
+        //dpm($tests);
+        //dpm($form_state);
+        //get the cf version:
+
+
         $options = array();
         $options['filepath'] = \Drupal::service('file_system')->realpath($uri); //Absolute system filepath
         //dpm($options);
@@ -265,6 +310,11 @@ class DatasetValidationForm extends FormBase
             //dpm('processing archived files: '. $mime_type);
             self::processArchive($form, $form_state, $tests, $file_path, $filename, $file, $options);
         }
+        if (!$form_state->has('page')) {
+            $file->delete();
+            $filesystem = \Drupal::service('file_system');
+            $filesystem->deleteRecursive($form_state->get('upload_location'));
+        }
     }
     /*
    * {@inheritdoc}
@@ -276,6 +326,11 @@ class DatasetValidationForm extends FormBase
     {
         $form['message']['result'] = [];
 
+        if (!$form_state->has('page')) {
+            $file_id = $form_state->get('fid');
+            $file = File::load($file_id);
+            $file->delete();
+        }
         return $form;
     }
     /**
@@ -285,13 +340,14 @@ class DatasetValidationForm extends FormBase
     private function processSingle(array &$form, FormStateInterface $form_state, $tests, $file_path, $filename, $file)
     {
         $message = [];
+        //dpm($tests);
         //Loop over tests and check the compliance.
         $int_status = 0;
         if ($tests !== null) {
             foreach ($tests as $key => $value) {
                 if ($value !== 0) {
                     //dpm("doing test: " . $key);
-                    $status = $this->complianceChecker->checkCompliance($file_path, $filename, $key);
+                    $status = $this->complianceChecker->checkCompliance($file_path, $filename, $value);
                     $message[] = $this->complianceChecker->getComplianceMessage();
 
                     if (!$status) {
@@ -311,6 +367,7 @@ class DatasetValidationForm extends FormBase
         }
         //$form_state->cleanValues();
         $form_state->set('file_path', $file_path);
+        $form_state->setValue('reset-upload-field', true);
         $form_state->setRebuild();
     }
 
@@ -387,7 +444,7 @@ class DatasetValidationForm extends FormBase
                     foreach ($tests as $key => $value) {
                         if ($value !== 0) {
                             //dpm("doing test: " . $key);
-                            $status = $this->complianceChecker->checkCompliance($filepath, $f, $key);
+                            $status = $this->complianceChecker->checkCompliance($filepath, $f, $value);
                             $message[] = $this->complianceChecker->getComplianceMessage();
 
                             if (!$status) {
@@ -409,7 +466,7 @@ class DatasetValidationForm extends FormBase
             $filesystem->deleteRecursive($form_state->get('upload_location'));
         }
         //$form_state->cleanValues();
-
+        $form_state->setValue('reset-upload-field', true);
         $form_state->setRebuild();
     }
 }
