@@ -431,11 +431,14 @@ class DatasetValidationForm extends FormBase
         foreach ($archived_files as $f) {
             $uri = $form_state->get('upload_location') .'/' .$f;
             $filepath = \Drupal::service('file_system')->realpath($uri);
+            //dpm($filepath);
             $path_info = pathinfo($filepath);
-            $ext = $path_info['extension'];
-            if (!is_null($ext)) {
-                //\Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
+            //\Drupal::logger('dataset_validation_archiver')->debug('<pre><code>' . print_r($path_info, true) . '</code></pre>');
+            //dpm($path_info);
 
+            if (isset($path_info['extension'])) {
+                //\Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
+                $ext = $path_info['extension'];
 
 
                 if ($tests !== null && ($ext === 'nc')) {
