@@ -4,7 +4,6 @@ namespace Drupal\dataset_validation\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -169,7 +168,8 @@ class DatasetValidationForm extends FormBase {
       '#upload_validators' => [
         'file_validate_extensions' => ['nc ' . $extensions],
     // IMPORTANT for allowing file upload:
-    // this works only when changing the /etc/php5/apache2/php.ini post_max_size and filesize in apache to 200M.
+    // this works only when changing the /etc/php5/apache2/php.ini.
+    // post_max_size and filesize in apache to 200M.
         'file_validate_size' => [1500 * 1024 * 1024],
       ],
       '#upload_location' => $form_state->get('upload_location'),
@@ -192,7 +192,6 @@ class DatasetValidationForm extends FormBase {
     ];
 
     $form['#attached']['library'][] = 'dataset_validation/style';
-    // $form['#submit'][] = 'dataset_validation_submit';
 
     if ($form_state->getValue('reset-upload-field')) {
       $form['container']['creation']['file']['#file'] = FALSE;
@@ -285,14 +284,14 @@ class DatasetValidationForm extends FormBase {
       self::processArchive($form, $form_state, $tests, $file_path, $filename, $file, $options);
     }
     if (!$form_state->has('page')) {
-      $file->delete();
+      // $file->delete();
       // $filesystem = \Drupal::service('file_system');
       $this->filesystem->deleteRecursive($form_state->get('upload_location'));
     }
   }
 
   /**
-   * Clean the uploaded file once the validation is complete. The form is submitted.
+   * Clean the uploaded file once the validation is complete.
    *
    * {@inheritdoc}
    */
@@ -350,8 +349,6 @@ class DatasetValidationForm extends FormBase {
   private function processArchive(array &$form, FormStateInterface $form_state, $tests, $file_path, $filename, $file, $options) {
     $message = [];
     $archived_files = [];
-    // Add special message when processing files in archive.
-
     // Get the archiver instance for the given file.
     $archiver = $this->archiverManager->getInstance($options);
     // dpm($archiver);
@@ -367,7 +364,6 @@ class DatasetValidationForm extends FormBase {
       ];
 
       // $form_state->setRebuild();
-
       // return;.
     }
     else {
@@ -377,16 +373,15 @@ class DatasetValidationForm extends FormBase {
         '#suffix' => '</div>',
         '#markup' => "<span><em>Showing validation result(s) for dataset(s) in archvie <strong>{$filename}</strong></em></span>",
         '#allowed_tags' => ['div', 'table', 'tr', 'td', 'style', 'strong',
-          'img', 'a', 'span', 'h3', 'h4', 'h5', 'br', 'span'
+          'img', 'a', 'span', 'h3', 'h4', 'h5', 'br', 'span',
         ],
       ];
       $archived_files = $archiver->listContents();
-      // \Drupal::logger('dataset_validation_archiver')->debug('<pre><code>' . print_r($archived_files, true) . '</code></pre>');
-      // Get list of files in archive
+      // Get list of files in archive.
       $form_state->set('archived_files', $archived_files);
 
       // Extract the files.
-      $archiver->extract(\Drupal::service('file_system')->realpath($form_state->get('upload_location')));
+      $archiver->extract($this->filesystem->realpath($form_state->get('upload_location')));
 
       // Add aggregation flag if more than one file in archive.
       if (count($archived_files) > 1) {
@@ -402,12 +397,10 @@ class DatasetValidationForm extends FormBase {
 
     foreach ($archived_files as $f) {
       $uri = $form_state->get('upload_location') . '/' . $f;
-      $filepath = \Drupal::service('file_system')->realpath($uri);
+      $filepath = $this->filesystem->realpath($uri);
       // dpm($filepath);
       $path_info = pathinfo($filepath);
-      // \Drupal::logger('dataset_validation_archiver')->debug('<pre><code>' . print_r($path_info, true) . '</code></pre>');
       // dpm($path_info);
-
       if (isset($path_info['extension'])) {
         // \Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
         $ext = $path_info['extension'];
@@ -436,8 +429,7 @@ class DatasetValidationForm extends FormBase {
     // Delete the file:
     if (!$form_state->has('keep_file')) {
       $file->delete();
-      $filesystem = \Drupal::service('file_system');
-      $filesystem->deleteRecursive($form_state->get('upload_location'));
+      $this->filesystem->deleteRecursive($form_state->get('upload_location'));
     }
     // $form_state->cleanValues();
     $form_state->setValue('reset-upload-field', TRUE);
