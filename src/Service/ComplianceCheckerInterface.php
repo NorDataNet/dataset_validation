@@ -3,7 +3,7 @@
 namespace Drupal\dataset_validation\Service;
 
 /**
- * Interface ComplianceCheckerInterface.
+ * Interface for the compliance-checker.
  *
  * @package Drupal\dataset_validation\Service
  */

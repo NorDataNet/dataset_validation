@@ -2,13 +2,8 @@
 
 namespace Drupal\dataset_validation\Form;
 
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\ReplaceCommand;
-use Drupal\Core\Archiver\ArchiverInterface;
-use Drupal\Core\File\FileSystem;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\dataset_validation\Service\ComplianceCheckerInterface;
 use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -32,20 +27,25 @@ class DatasetValidationForm extends FormBase {
   protected $complianceChecker;
 
   /**
-   * The current Drupal session.
+   * Filesystem service.
    *
-   * @var \Drupal\Core\Session
+   * @var \Drupal\Core\File\FileSystem
    */
-  protected $session;
+  protected $filesystem;
 
   /**
-   * Constructor.
+   * Stream wrapper manager.
    *
-   * @param \Drupal\dataset_validation\Service\ComplianceCheckerInterface
+   * @var \Drupal\Core\StreamWrapper\StreamWrapperManager
    */
-  // Public function __construct(ComplianceCheckerInterface $compliance_checker) {
-  // $this->complianceChecker = $compliance_checker;
-  // }.
+  protected $streamWrapper;
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
 
   /**
    * {@inheritdoc}
@@ -54,7 +54,9 @@ class DatasetValidationForm extends FormBase {
     $instance = parent::create($container);
     $instance->complianceChecker = $container->get('dataset_validation.compliance_checker');
     $instance->archiverManager = $container->get('plugin.manager.archiver');
-    $instance->archiverManager = $container->get('session');
+    $instance->filesystem = $container->get('file_system');
+    $instance->streamWrapper = $container->get('stream_wrapper_manager');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
     return $instance;
   }
 
@@ -87,13 +89,13 @@ class DatasetValidationForm extends FormBase {
 
     // Disable caching for this form
     // $form_state->disableCache();
-
     // Always empty form when rebuild.
     $form = [];
 
     // Set the current session id.
     if (!$form_state->has('session_id')) {
-      $form_state->set('session_id', $this->$session->getId());
+      $session = $this->getRequest()->getSession();
+      $form_state->set('session_id', $session->getId());
 
       // Check if we have another preset upload location.
       if ($form_state->has('upload_basepath')) {
@@ -180,7 +182,7 @@ class DatasetValidationForm extends FormBase {
     ];
     $form['container']['creation']['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => t('Validate'),
+      '#value' => $this->t('Validate'),
       '#submit' => ['::validate'],
       '#ajax' => [
         'callback' => '::validateCallback',
@@ -233,12 +235,13 @@ class DatasetValidationForm extends FormBase {
     // Get file id of uploaded file and then get the real os filepath.
     $file_id = $values['file'][0];
     $form_state->set('fid', $file_id);
-    $file = File::load($file_id);
+    // $file = File::load($file_id);
+    $file = $this->entityTypeManager->getStorage('file')->load($file_id);
     $file->setTemporary();
     $file->save();
     $form_state->set('upload_fid', $file->id());
     $uri = $file->getFileUri();
-    $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager')->getViaUri($uri);
+    $stream_wrapper_manager = $this->streamWrapper->getViaUri($uri);
     $file_path = $stream_wrapper_manager->realpath();
     $filename = $file->getFilename();
     $form_state->set('filename', $filename);
@@ -269,7 +272,7 @@ class DatasetValidationForm extends FormBase {
 
     $options = [];
     // Absolute system filepath.
-    $options['filepath'] = \Drupal::service('file_system')->realpath($uri);
+    $options['filepath'] = $this->filesystem->realpath($uri);
     // dpm($options);
     // process single netCDF file.
     if ($mime_type === 'application/x-netcdf') {
@@ -283,8 +286,8 @@ class DatasetValidationForm extends FormBase {
     }
     if (!$form_state->has('page')) {
       $file->delete();
-      $filesystem = \Drupal::service('file_system');
-      $filesystem->deleteRecursive($form_state->get('upload_location'));
+      // $filesystem = \Drupal::service('file_system');
+      $this->filesystem->deleteRecursive($form_state->get('upload_location'));
     }
   }
 
@@ -298,7 +301,8 @@ class DatasetValidationForm extends FormBase {
 
     if (!$form_state->has('page')) {
       $file_id = $form_state->get('fid');
-      $file = File::load($file_id);
+      $file = $this->entityTypeManager->getStorage('file')->load($file_id);
+      // File::load($file_id);
       $file->delete();
     }
     return $form;
@@ -331,8 +335,8 @@ class DatasetValidationForm extends FormBase {
     // Delete the file:
     if (!$form_state->has('keep_file')) {
       $file->delete();
-      $filesystem = \Drupal::service('file_system');
-      $filesystem->deleteRecursive($form_state->get('upload_location'));
+      // $filesystem = \Drupal::service('file_system');
+      $this->filesystem->deleteRecursive($form_state->get('upload_location'));
     }
     // $form_state->cleanValues();
     $form_state->set('file_path', $file_path);
