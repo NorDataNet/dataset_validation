@@ -1,0 +1,10 @@
+{
+    "name": "nordatanet/dataset_validation",
+    "type": "drupal-custom-module",
+    "description": "Module with drupal ui for the IOOS Compliance checker, developed for NorDataNet.",
+    "license": "GPL-2.0-or-later",
+    "scripts": {
+        "sniff": "phpcs --colors -n --standard=Drupal --extensions=php,module,yml src",
+        "snifferfix": "phpcbf --colors -n --standard=Drupal --extensions=php,module,yml src"
+    }
+}
