@@ -176,7 +176,6 @@ class DatasetValidationForm extends FormBase {
     ];
 
     // dpm($form_state->get('upload_location'));.
-
     $form['container']['creation']['actions'] = [
       '#type' => 'actions',
     ];
@@ -268,7 +267,6 @@ class DatasetValidationForm extends FormBase {
     // dpm($tests);
     // dpm($form_state);
     // get the cf version:
-
     $options = [];
     // Absolute system filepath.
     $options['filepath'] = $this->filesystem->realpath($uri);
