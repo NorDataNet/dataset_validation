@@ -1,6 +1,9 @@
 <?php
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Component\Utility\Html;
+use Drupal\markdown\Markdown;
+
 /**
  * Implements hook_help().
  */
@@ -10,11 +13,26 @@ function dataset_validation_help($route_name, RouteMatchInterface $route_match)
     // Main module help for the metsis_search module.
     /** TODO: Read help from module's README.md */
     case 'help.page.dataset_validation':
-      $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Dataset validation') . '</p>';
-      return $output;
+      $readme_file = __DIR__ . '/README.md';
+      if (!file_exists($readme_file)) {
+        return NULL;
+      }
+      $text = file_get_contents($readme_file);
 
-    default:
+      // If the Markdown module is installed...
+      if (\Drupal::moduleHandler()->moduleExists('markdown') === TRUE) {
+          return Markdown::create()->loadFile(__DIR__ . '/README.md');
+      }
+      // Else the Markdown module is not installed...
+      else {
+        // Outputs the escaped README in plain text (watchout for html tags).
+        $output = '<pre>' . Html::escape($text) . '</pre>';
+        $output = '';
+        $output .= '<h3>' . t('About') . '</h3>';
+        $output .= '<p>' . t('Dataset validation') . '</p>';
+        $output = '<pre>' . Html::escape($text) . '</pre>';
+        return $output;
+      }
+          default:
   }
 }
