@@ -274,12 +274,12 @@ class DatasetValidationForm extends FormBase {
     // process single netCDF file.
     if ($mime_type === 'application/x-netcdf') {
       // dpm('processing single: ' . $mime_type);.
-      self::processSingle($form, $form_state, $tests, $file_path, $filename, $file);
+      $this->processSingle($form, $form_state, $tests, $file_path, $filename, $file);
     }
     // Process archive of netCDF files.
     else {
       // dpm('processing archived files: '. $mime_type);.
-      self::processArchive($form, $form_state, $tests, $file_path, $filename, $file, $options);
+      $this->processArchive($form, $form_state, $tests, $file_path, $filename, $file, $options);
     }
     if (!$form_state->has('page')) {
       // $file->delete();
@@ -314,7 +314,7 @@ class DatasetValidationForm extends FormBase {
     // Loop over tests and check the compliance.
     $int_status = 0;
     if ($tests !== NULL) {
-      foreach ($tests as $key => $value) {
+      foreach ($tests as $_ => $value) {
         if ($value !== 0) {
           // dpm("doing test: " . $key);.
           $status = $this->complianceChecker->checkCompliance($file_path, $filename, $value);
@@ -406,7 +406,7 @@ class DatasetValidationForm extends FormBase {
         if ($tests !== NULL && ($ext === 'nc')) {
           // \Drupal::logger('archiver')->debug($filepath . ' : ' . $ext);
           $agg_files[] = $filepath;
-          foreach ($tests as $key => $value) {
+          foreach ($tests as $_ => $value) {
             if ($value !== 0) {
               // dpm("doing test: " . $key);.
               $status = $this->complianceChecker->checkCompliance($filepath, $f, $value);

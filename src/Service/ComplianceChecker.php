@@ -55,11 +55,11 @@ class ComplianceChecker implements ComplianceCheckerInterface {
     // dpm($out);
     if ($status === 0) {
       $return_status = TRUE;
-      $this->message = self::createSucessMessage($filename, $test, $out);
+      $this->message = $this->createSucessMessage($filename, $test, $out);
     }
     else {
       $return_status = FALSE;
-      $this->message = self::createFailedMessage($filename, $test, $out);
+      $this->message = $this->createFailedMessage($filename, $test, $out);
     }
 
     return $return_status;
