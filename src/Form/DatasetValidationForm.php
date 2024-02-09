@@ -112,8 +112,8 @@ class DatasetValidationForm extends FormBase {
       '#prefix' => '<div id="message-wrapper">',
       '#suffix' => '</div>',
     ];
-    $form['container']['message'] = [];
-    $form['container']['validation_message'] = [];
+    $form['container']['message'] = NULL;
+    $form['container']['validation_message'] = NULL;
 
     $form['container']['creation'] = [
       '#type' => 'fieldset',
@@ -210,7 +210,10 @@ class DatasetValidationForm extends FormBase {
     $form['container']['creation']['file']['filename'] = [];
     $form['container']['creation']['file']['#value']['fid'] = 0; */
     // $form['message']['result'] = [];
-    $form['container']['message'] = $message;
+
+    $form['container']['message']['cf'] = $message[0] ?? NULL;
+    $form['container']['message']['acdd'] = $message[1] ?? NULL;
+    // dpm($form, __FUNCTION__);.
     return $form;
 
     /** @var \Drupal\Core\Render\RendererInterface $renderer */
@@ -264,8 +267,9 @@ class DatasetValidationForm extends FormBase {
       }
     }
 
-    // dpm($tests);
-    // dpm($form_state);
+    // dpm($form['container']['message']);
+    // dpm($form_state, __FUNCTION__);
+    // dpm($tests, __FUNCTION__);
     // get the cf version:
     $options = [];
     // Absolute system filepath.
@@ -318,6 +322,7 @@ class DatasetValidationForm extends FormBase {
         if ($value !== 0) {
           // dpm("doing test: " . $key);.
           $status = $this->complianceChecker->checkCompliance($file_path, $filename, $value);
+          // dpm($status, __FUNCTION__);.
           $message[] = $this->complianceChecker->getComplianceMessage();
 
           if (!$status) {
