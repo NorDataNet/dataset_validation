@@ -45,7 +45,7 @@ class ComplianceChecker implements ComplianceCheckerInterface {
     // $bin_path = $this->config->get('compliance_checker_path') . '/';
     // } else { $bin_path = ''; }.
     $venv_python = '/home/ubuntu/python-venv/bin/python3'; // Linux
-    $script = '/home/ubuntu/python-venv/bin/cchecker.py';
+    $script = '/home/ubuntu/python-venv/bin/compliance-checker';
 
 // Execute
 $command = escapeshellcmd("$venv_python $script");
@@ -53,7 +53,7 @@ $command = escapeshellcmd("$venv_python $script");
     $bin_path = '';
     $out = NULL;
     $status = NULL;
-    exec($command . 'compliance-checker -v -c lenient -f html -o - --test=' . $test . ' ' . $filepath, $out, $status);
+    exec($command . ' -v -c lenient -f html -o - --test=' . $test . ' ' . $filepath, $out, $status);
     // dpm($out, __FUNCTION__);
     // Remove javascript.
     $out[6] = '';
