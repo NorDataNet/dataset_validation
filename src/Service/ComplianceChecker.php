@@ -44,12 +44,13 @@ class ComplianceChecker implements ComplianceCheckerInterface {
     // if($this->config->has('compliance_checker_path')) {
     // $bin_path = $this->config->get('compliance_checker_path') . '/';
     // } else { $bin_path = ''; }.
-    $venv_python = '/home/ubuntu/python-venv/bin/python3'; // Linux
+    // Linux.
+    $venv_python = '/home/ubuntu/python-venv/bin/python3';
     $script = '/home/ubuntu/python-venv/bin/compliance-checker';
 
-// Execute
-$command = escapeshellcmd("$venv_python $script");
-// $output = shell_exec($command);
+    // Execute.
+    $command = escapeshellcmd("$venv_python $script");
+    // $output = shell_exec($command);
     $bin_path = '';
     $out = NULL;
     $status = NULL;

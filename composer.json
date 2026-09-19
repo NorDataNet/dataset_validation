@@ -6,5 +6,12 @@
     "scripts": {
         "sniff": "phpcs --colors -n --standard=Drupal --extensions=php,module,yml src",
         "snifferfix": "phpcbf --colors -n --standard=Drupal --extensions=php,module,yml src"
+    },
+    "require": {
+        "drupal/markdown": "^3.1"
+    },
+    "require-dev": {
+        "drush/drush": "^13"
     }
+
 }

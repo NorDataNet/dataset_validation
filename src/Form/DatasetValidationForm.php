@@ -174,11 +174,7 @@ class DatasetValidationForm extends FormBase {
         ],
       ],
 
-    // IMPORTANT for allowing file upload:
-    // this works only when changing the /etc/php5/apache2/php.ini.
-    // post_max_size and filesize in apache to 200M.
-    //    'file_validate_size' => [1500000000],
-    //  ],
+      // IMPORTANT for allowing file upload:
       '#upload_location' => $form_state->get('upload_location'),
     ];
 
