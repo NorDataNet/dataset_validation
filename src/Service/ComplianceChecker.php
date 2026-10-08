@@ -48,6 +48,10 @@ class ComplianceChecker implements ComplianceCheckerInterface {
     $venv_python = '/home/ubuntu/python-venv/bin/python3';
     $script = '/home/ubuntu/python-venv/bin/compliance-checker';
 
+    /* For local testing:
+    $venv_python = '/usr/bin/python3';
+    $script = 'compliance-checker'; */
+
     // Execute.
     $command = escapeshellcmd("$venv_python $script");
     // $output = shell_exec($command);
