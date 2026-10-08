@@ -1,7 +1,7 @@
 name: 'Dataset Validation'
 description: 'Use the compliance checker tool for validation of datasets'
 type: module
-core_version_requirement: ^8.8 || ^9 || ^10 | ^11
+core_version_requirement: ^11
 version: 2.2.0
 package: NorDataNet
 dependencies:

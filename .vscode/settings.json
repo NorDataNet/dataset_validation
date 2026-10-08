@@ -65,4 +65,9 @@
     "source.fixAll.eslint": "explicit"
   },
   "cSpell.diagnosticLevel": "Hint",
+  "php.version": "8.4",
+  "phpstan.binCommand": [
+    "ddev phpstan"
+  ],
+  "phpsab.executablePathCS": "ddev phpcs",
 }

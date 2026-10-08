@@ -3,15 +3,12 @@
     "type": "drupal-custom-module",
     "description": "Module with drupal ui for the IOOS Compliance checker, developed for NorDataNet.",
     "license": "GPL-2.0-or-later",
-    "scripts": {
-        "sniff": "phpcs --colors -n --standard=Drupal --extensions=php,module,yml src",
-        "snifferfix": "phpcbf --colors -n --standard=Drupal --extensions=php,module,yml src"
-    },
     "require": {
-        "drupal/markdown": "^3.1"
+        "drupal/markdown": "^3.1",
+        "league/commonmark": "^2.8"
     },
     "require-dev": {
-        "drush/drush": "^13"
+        "drush/drush": "^13",
+        "drupal/upgrade_status": "^4.3"
     }
-
 }

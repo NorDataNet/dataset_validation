@@ -1,5 +1,5 @@
 style:
-  version: 1.x
+  version: 2.0
   css:
     theme:
       css/dataset_validation_style.css: {}
